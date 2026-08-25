@@ -14,6 +14,8 @@
   },
 '''
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from flask import jsonify, request, session, redirect, url_for
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
@@ -30,10 +32,20 @@ def current_user():
     return db.user.find_one({"ID": userId}, {"_id": 1})
 
 
+def parse_group_id():
+    """쿼리스트링 id를 ObjectId로. 형식 틀리면 None (24자리 hex 아니면 예외 남)."""
+    try:
+        return ObjectId(request.args.get('id'))
+    except (InvalidId, TypeError):
+        return None
+
+
 @group_bp.route("/info", methods=['GET'])
 def request_group_list():
-    # find()는 Cursor라 jsonify 못 함. list로 풀고 ObjectId는 빼야 직렬화됨
-    group_list = list(db.group.find({}, {"_id": 0, "name": 1}))
+    group_list = [
+        {"id": str(g["_id"]), "name": g["name"]}
+        for g in db.group.find({}, {"_id": 1, "name": 1})
+    ]
     return jsonify(group_list), 200
 
 
@@ -56,6 +68,7 @@ def create_group():
         **stamp_create()
     }
 
+    #좀 예쁘게 주지
     try:
         result = db.group.insert_one(info)
     except DuplicateKeyError:
@@ -82,15 +95,21 @@ def delete_group():
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
 
-    group_name = request.args.get('group')
+    group_id = parse_group_id()
+    if group_id is None:
+        return jsonify({"result": 0, "error": "그룹 id가 올바르지 않습니다."}), 400
 
-    # owner는 스키마상 ObjectId. 쿼리로 받은 문자열로 찾으면 절대 안 걸림
     result = db.group.delete_one({
-        'owner': user['_id'],
-        'name': group_name
+        '_id': group_id,
+        'owner': user['_id']
     })
 
     if result.deleted_count == 1:
+        # 멤버들 join_groups에 남은 id 청소. 안 하면 없는 그룹을 가리키는 쓰레기가 쌓임
+        db.user.update_many(
+            {"join_groups": group_id},
+            {"$pull": {"join_groups": group_id}, "$set": stamp_update()}
+        )
         return jsonify({"result": 1}), 200
     return jsonify({"result": 0, "error": "그룹을 찾을 수 없습니다."}), 404
 
@@ -101,13 +120,16 @@ def edit_group_name():
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
 
-    group_name = request.args.get('group')
+    group_id = parse_group_id()
+    if group_id is None:
+        return jsonify({"result": 0, "error": "그룹 id가 올바르지 않습니다."}), 400
+
     change_name = (request.args.get('change') or '').strip()
     if not change_name:
         return jsonify({"result": 0, "error": "바꿀 이름을 입력하세요."}), 400
 
     result = db.group.update_one(
-        {'owner': user['_id'], 'name': group_name},
+        {'_id': group_id, 'owner': user['_id']},
         {'$set': {'name': change_name, **stamp_update()}}
     )
 
