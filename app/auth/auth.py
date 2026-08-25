@@ -10,7 +10,6 @@ from db import db
 
 KST = ZoneInfo("Asia/Seoul")
 
-
 @auth_bp.route("/login", methods=['POST'])
 def login():
     userId = request.form.get('userId')
@@ -42,7 +41,6 @@ def signup():
 
     now = datetime.now(KST)
 
-    # 닉네임 중복되면 다시 뽑기
     nickname = random_nickname()
     while db.user.find_one({"nickname": nickname}, {"_id": 1}):
         nickname = random_nickname()

@@ -15,6 +15,10 @@ app.register_blueprint(api_bp)
 def render_index():
     return render_template('index.html')
 
+@app.route('/main')
+def render_main():
+    return render_template('main.html')
+
 @app.route('/signup')
 def render_signup():
     return render_template('auth/signup.html')
