@@ -1,19 +1,13 @@
-from pymongo import MongoClient
+
 from flask import Flask, render_template, jsonify, request
 
-import sys, os
+import sys
 
 from app import api_bp
 
 app = Flask(__name__, static_folder='app/static', template_folder='app/templates')
-
-# 환경변수 세팅 
-MONGO_URL = os.environ.get('MONGO_URL')
-
-# DB 서버 세팅
-client = MongoClient('MONGO_URL', 27017)
-db = client.PeerSolve
-
+#시크릿키 설정
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 # 블루프린트 등록 관리
 app.register_blueprint(api_bp)
 

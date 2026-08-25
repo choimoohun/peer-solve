@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <section class="login-box">
+            <h1 class="login-title">로그인</h1>
+
+            <form action="/api/auth/login" method="POST" class="login-form">
+                <div class="input-group">
+                    <input type="text" id="userId" name="userId" placeholder="아이디를 입력하세요" required autocomplete="username">
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="userPassword" name="userPassword" placeholder="비밀번호를 입력하세요" required autocomplete="current-password">
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-submit">로그인</button>
+                </div>
+            </form>
+            <a href="/signup">회원가입하기</a>
+        </section>
+    </div>
+</body>
+
+</html>
