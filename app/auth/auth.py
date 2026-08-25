@@ -18,7 +18,7 @@ def login():
 
     user = db.user.find_one({"ID": userId}, {"ID": 1, "password": 1, "_id": 0})
     if user is None or not check_password_hash(user['password'], password):
-        # 아이디 없음/비번 틀림 구분 안 함 (계정 존재 여부 노출 방지)
+
         return jsonify({"result": "failure"}), 401
 
     session['user_login'] = userId
@@ -59,7 +59,7 @@ def signup():
     except DuplicateKeyError:
         return jsonify({"result": "failure", "reason": "duplicate_id"}), 409
 
-    return jsonify({"result": "success", "nickname": nickname})
+    return redirect(url_for('render_index'))
 
 
 @auth_bp.route("/logout")
