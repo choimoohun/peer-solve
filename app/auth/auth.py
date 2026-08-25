@@ -8,6 +8,10 @@ from ..util import stamp_create
 
 @auth_bp.route("/login", methods=['POST'])
 def login():
+    """로그인.
+
+    비밀번호는 해시로만 저장돼 있어서 check_password_hash로 대조
+    """
     userId = request.form.get('userId')
     password = request.form.get('userPassword')
 
@@ -22,6 +26,8 @@ def login():
 
 @auth_bp.route("/signup", methods=['POST'])
 def signup():
+    """회원가입. 닉네임은 랜덤
+    """
     userId = request.form.get('userId')
     password = request.form.get('userPassword')
     confirmPassword = request.form.get('userConfirmPassword')
@@ -55,5 +61,6 @@ def signup():
 
 @auth_bp.route("/logout")
 def logout():
+    """로그아웃"""
     session.pop('user_login', None)
     return redirect(url_for('render_index'))

@@ -8,7 +8,6 @@ from app import api_bp
 app = Flask(__name__, static_folder='app/static', template_folder='app/templates')
 #시크릿키 설정
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
 # 블루프린트 등록 관리
 app.register_blueprint(api_bp)
 
@@ -27,7 +26,6 @@ def render_signup():
 @app.route('/login')
 def render_login():
     return render_template('auth/login.html')
-
 
 if __name__ == '__main__':
     print(sys.executable)

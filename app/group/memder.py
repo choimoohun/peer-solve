@@ -1,3 +1,9 @@
+"""그룹 멤버 관리. 초대 / 추방 / 나가기 / 목록.
+
+group.members 와 user_profile.join_groups 는 같은 관계를 양쪽에서 들고 있음.
+한쪽만 고치면 바로 어긋나므로 관계 변경은 반드시 link() / unlink()로만 함.
+"""
+
 from flask import jsonify, request
 
 from . import group_bp
@@ -7,12 +13,15 @@ from ..util import stamp_update
 
 
 def find_user_by_id(userId):
+    """로그인 ID로 유저 문서 찾음. 없거나 빈 값이면 None."""
     if not userId:
         return None
     return db.user.find_one({"ID": userId}, {"_id": 1})
 
 
 def owned_group(user, group_id):
+    """본인이 owner인 그룹만 돌려줌. 아니면 None.
+    """
     return db.group.find_one(
         {"_id": group_id, "owner": user['_id']},
         {"_id": 1, "owner": 1, "members": 1}
@@ -20,10 +29,13 @@ def owned_group(user, group_id):
 
 
 def link(group_id, user_id):
+    """멤버 링크. group.members와 user.join_groups 양쪽 모두.
+    """
     db.group.update_one(
         {"_id": group_id},
         {"$addToSet": {"members": user_id}, "$set": stamp_update()}
     )
+
     db.user.update_one(
         {"_id": user_id},
         {"$addToSet": {"join_groups": group_id}, "$set": stamp_update()}
@@ -31,6 +43,10 @@ def link(group_id, user_id):
 
 
 def unlink(group_id, user_id):
+    """멤버 링크 해제.
+
+    추방/나가기/그룹삭제가 전부 이 함수 거쳐야 두 컬렉션이 안 어긋남.
+    """
     db.group.update_one(
         {"_id": group_id},
         {"$pull": {"members": user_id}, "$set": stamp_update()}
@@ -43,6 +59,8 @@ def unlink(group_id, user_id):
 
 @group_bp.route("/members", methods=['GET'])
 def list_members():
+    """그룹 멤버 목록. query: id
+    """
     user = current_user()
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
@@ -74,6 +92,8 @@ def list_members():
 
 @group_bp.route("/invite", methods=['POST'])
 def invite_member():
+    """승인 절차 없이 owner가 유저를 그룹에 넣음. query: id / form: userId
+    """
     user = current_user()
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
@@ -99,9 +119,11 @@ def invite_member():
 
 @group_bp.route("/kick", methods=['DELETE'])
 def kick_member():
+    """추방 기능. query: id, userId
+    """
     user = current_user()
     if user is None:
-        return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
+        return jsonify({"result": 0, "error": "로그인이 필요합니능다."}), 401
 
     group_id = parse_group_id()
     if group_id is None:
@@ -115,7 +137,7 @@ def kick_member():
     if target is None:
         return jsonify({"result": 0, "error": "그런 유저가 없습니다."}), 404
 
-    # owner를 빼면 주인 없는 그룹이 됨. 접으려면 /delete 를 쓰게 한다
+    # owner를 빼면 주인 없는 그룹이 됨. 접으려면 /delete 를 쓰게 함
     if target['_id'] == group['owner']:
         return jsonify({"result": 0, "error": "그룹장은 추방할 수 없습니다."}), 400
 
@@ -128,6 +150,8 @@ def kick_member():
 
 @group_bp.route("/leave", methods=['DELETE'])
 def leave_group():
+    """멤버가 스스로 나가기. query: id
+    """
     user = current_user()
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401

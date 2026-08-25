@@ -5,9 +5,6 @@
     "members": [
       "ObjectId (user_profile._id)"
     ],
-    "questions": [
-      "ObjectId (question._id)"
-    ],
     "owner": "ObjectId (user_profile._id)",
     "at_create": "Timestamp",
     "at_update": "Timestamp"
@@ -33,7 +30,7 @@ def current_user():
 
 
 def parse_group_id():
-    """쿼리스트링 id를 ObjectId로. 형식 틀리면 None (24자리 hex 아니면 예외 남)."""
+    """쿼리스트링 id를 ObjectId로 바꿈. 형식 틀리면 None (24자리 hex 아니면 예외 남)."""
     try:
         return ObjectId(request.args.get('id'))
     except (InvalidId, TypeError):
@@ -42,16 +39,32 @@ def parse_group_id():
 
 @group_bp.route("/info", methods=['GET'])
 def request_group_list():
+    """내가 속한 그룹 목록. [{id, name, is_owner}] 형태.
+    """
+    user = current_user()
+    if user is None:
+        return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
+
     group_list = [
-        {"id": str(g["_id"]), "name": g["name"]}
-        for g in db.group.find({}, {"_id": 1, "name": 1})
+        {
+            "id": str(g["_id"]),
+            "name": g["name"],
+            "is_owner": g["owner"] == user['_id'],
+        }
+        for g in db.group.find(
+            {"members": user['_id']},
+            {"_id": 1, "name": 1, "owner": 1}
+        )
     ]
     return jsonify(group_list), 200
 
 
 @group_bp.route("/create", methods=['POST'])
 def create_group():
-    # owner를 폼/쿼리로 받으면 남의 이름으로 그룹 생성 가능. 세션에서만 꺼냄
+    """그룹 만들고 생성자를 owner 겸 첫 멤버로 넣음.
+
+    form: name
+    """
     user = current_user()
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
@@ -63,12 +76,11 @@ def create_group():
     info = {
         "name": group_name,
         "members": [user['_id']],
-        "questions": [],
         "owner": user['_id'],
         **stamp_create()
     }
 
-    #좀 예쁘게 주지
+    # 좀 예쁘게 주지
     try:
         result = db.group.insert_one(info)
     except DuplicateKeyError:
@@ -91,6 +103,8 @@ def create_group():
 
 @group_bp.route("/delete", methods=['DELETE'])
 def delete_group():
+    """본인이 owner인 그룹 지움. query: id
+    """
     user = current_user()
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
@@ -116,6 +130,8 @@ def delete_group():
 
 @group_bp.route("/edit", methods=['PUT'])
 def edit_group_name():
+    """그룹 이름 변경. query: id, change
+    """
     user = current_user()
     if user is None:
         return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
