@@ -1,18 +1,17 @@
 from flask import jsonify, request, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo.errors import DuplicateKeyError
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 from . import auth_bp
 from .nickname import random_nickname
-from db import db
-
-KST = ZoneInfo("Asia/Seoul")
-
+from ..db import db
+from ..util import stamp_create
 
 @auth_bp.route("/login", methods=['POST'])
 def login():
+    """로그인.
+
+    비밀번호는 해시로만 저장돼 있어서 check_password_hash로 대조
+    """
     userId = request.form.get('userId')
     password = request.form.get('userPassword')
 
@@ -27,6 +26,8 @@ def login():
 
 @auth_bp.route("/signup", methods=['POST'])
 def signup():
+    """회원가입. 닉네임은 랜덤
+    """
     userId = request.form.get('userId')
     password = request.form.get('userPassword')
     confirmPassword = request.form.get('userConfirmPassword')
@@ -40,9 +41,6 @@ def signup():
     if db.user.find_one({"ID": userId}, {"_id": 1}):
         return jsonify({"result": "failure", "reason": "duplicate_id"}), 409
 
-    now = datetime.now(KST)
-
-    # 닉네임 중복되면 다시 뽑기
     nickname = random_nickname()
     while db.user.find_one({"nickname": nickname}, {"_id": 1}):
         nickname = random_nickname()
@@ -53,8 +51,7 @@ def signup():
             "password": generate_password_hash(password),
             "nickname": nickname,
             "join_groups": [],
-            "at_create": now,
-            "at_update": now
+            **stamp_create()
         })
     except DuplicateKeyError:
         return jsonify({"result": "failure", "reason": "duplicate_id"}), 409
@@ -64,5 +61,6 @@ def signup():
 
 @auth_bp.route("/logout")
 def logout():
+    """로그아웃"""
     session.pop('user_login', None)
     return redirect(url_for('render_index'))
