@@ -12,4 +12,6 @@ NOUNS = [
 
 
 def random_nickname():
+    '''"힘쌘너구리"
+    '''
     return f"{random.choice(ADJECTIVES)}{random.choice(NOUNS)}{random.randrange(1000, 10000)}"
