@@ -1,0 +1,45 @@
+{
+  "user_profile": {
+    "_id": "ObjectId",
+    "ID": "String",
+    "password": "String",
+    "nickname": "String",
+    "avatar": "String (URL)",
+    "join_groups": [
+      "ObjectId (group._id)"
+    ],
+    "at_create": "Timestamp",
+    "at_update": "Timestamp"
+  },
+
+  "group": {
+    "_id": "ObjectId",
+    "name": "String",
+    "members": [
+      "ObjectId (user_profile._id)"
+    ],
+    "questions": [
+      "ObjectId (question._id)"
+    ],
+    "owner": "ObjectId (user_profile._id)",
+    "at_create": "Timestamp",
+    "at_update": "Timestamp"
+  },
+
+  "question": {
+    "_id": "ObjectId",
+    "language": "String",
+    "code": "String",
+    "owner": "ObjectId (user_profile._id)",
+    "group_id": "ObjectId (group._id)",
+    "at_create": "Timestamp",
+    "at_update": "Timestamp"
+  },
+  "comment": {
+    "_id": "ObjectId",
+    "text": "String",
+    "owner": "ObjectId (user_profile._id)",
+    "question_id": "ObjectId (question._id)",
+    "at_create": "Timestamp"
+  }
+}
