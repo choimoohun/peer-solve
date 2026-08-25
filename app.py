@@ -27,6 +27,10 @@ def render_signup():
 def render_login():
     return render_template('auth/login.html')
 
+@app.route('/upload')
+def render_upload():
+    return render_template('question/upload.html')
+
 if __name__ == '__main__':
     print(sys.executable)
     app.run('0.0.0.0', port=5000, debug=True)

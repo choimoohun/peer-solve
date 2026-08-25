@@ -1,23 +1,41 @@
-from flask import request, jsonify
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from bson import ObjectId
+from flask import request, jsonify, session
 
 from . import question_bp
-from db import db
+from ..db import db
+from ..util import stamp_create
 
 
-def is_auth(user_id, group_id):
-    # TODO: 실제 그룹원 확인
-    return True
+def current_user():
+    user_id = session.get("user_login")
+    if not user_id:
+        return None
+    return db.user.find_one({"ID": user_id}, {"_id": 1})
 
 
-KST = ZoneInfo("Asia/Seoul")
+def current_group():
+    group_id = session.get("selected_group")
+    if not group_id:
+        return None
+    return db.group.find_one({"_id": ObjectId(group_id)})
 
 
 @question_bp.route("/", methods=["POST"])
 def upload_question():
-    user_id = "user1" # 임시 값
-    group_id = "group1" # 임시 값
+    user = current_user()
+    group = current_group()
+
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    if not group:
+        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
 
     title = request.form.get("title")
     language = request.form.get("language")
@@ -35,21 +53,19 @@ def upload_question():
     if not code:
         return jsonify({"result": "failure", "message": "코드가 비어있습니다"}), 400
 
-    if not is_auth(user_id, group_id):
-        return jsonify({"result": "failure", "message": "업로드 권한이 없습니다"}), 403
-
-    now = datetime.now(KST)
-
     data = {
-        "owner": user_id,
-        "group_id": group_id,
+        "owner": user["_id"],
+        "group_id": group["_id"],
         "title": title,
         "language": language,
         "code": code,
-        "at_create": now,
-        "at_update": now,
+        **stamp_create(),
     }
 
-    db.questions.insert_one(data)
+    result = db.question.insert_one(data)
 
-    return jsonify({"result": "success"}), 201
+    db.group.update_one(
+        {"_id": group["_id"]}, {"$push": {"questions": result.inserted_id}}
+    )
+
+    return jsonify({"result": "success", "question_id": str(result.inserted_id)}), 201

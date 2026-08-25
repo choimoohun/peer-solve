@@ -30,23 +30,20 @@
 
     <script>
         function upload() {
-            const title = $('#title').val();
-            const language = $('#language').val();
-            const code = $('#code').val();
-
             $.ajax({
                 type: "POST",
                 url: "/api/question/",
                 data: {
-                    title: title,
-                    language: language,
-                    code: code
+                    title: $('#title').val(),
+                    language: $('#language').val(),
+                    code: $('#code').val()
                 },
-                success: function (response) {
+                success: function(response) {
+                    alert("코드를 성공적으로 업로드했습니다!");
                     history.back();
                 },
-                error: function (xhr) {
-                    console.error('');
+                error: function(xhr) {
+                    alert(xhr.responseJSON?.message || "코드 업로드에 실패했습니다.");
                 }
             });
         }
