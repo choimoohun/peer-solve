@@ -6,6 +6,8 @@ import sys, os
 from app import api_bp
 
 app = Flask(__name__, static_folder='app/static', template_folder='app/templates')
+
+# 환경변수 세팅 
 MONGODB_URL = os.environ.get('MONGODB_URL')
 
 # DB 서버 세팅
