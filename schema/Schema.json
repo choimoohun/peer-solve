@@ -35,6 +35,7 @@
     "at_create": "Timestamp",
     "at_update": "Timestamp"
   },
+  
   "comment": {
     "_id": "ObjectId",
     "text": "String",
