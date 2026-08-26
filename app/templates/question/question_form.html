@@ -41,7 +41,7 @@
         const isEdit = mode === "edit";
 
         $.ajax({
-            type: isEdit ? "PATCH" : "POST",
+            type: isEdit ? "PUT" : "POST",
             url: isEdit
                 ? `/api/question/${questionId}`
                 : "/api/question",
