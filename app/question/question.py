@@ -138,3 +138,36 @@ def update_question(question_id):
     db.question.update_one({"_id": question["_id"]}, {"$set": data})
 
     return jsonify({"result": "success", "question_id": question_id}), 200
+
+
+@question_bp.route("/<question_id>", methods=["DELETE"])
+def delete_question(question_id):
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    question = db.question.find_one({"_id": ObjectId(question_id)})
+    if not question:
+        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
+
+    if question["owner"] != user["_id"]:
+        return jsonify({"result": "failure", "message": "작성자만 코드를 삭제할 수 있습니다."}), 403
+
+    group = db.group.find_one({"_id": question["group_id"]})
+    if not group:
+        return jsonify({"result": "failure", "message": "그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
+
+    db.group.update_one(
+        {"_id": group["_id"]},
+        {"$pull": {"questions": question["_id"]}},
+    )
+
+    db.question.delete_one({"_id": question["_id"]})
+
+    return jsonify({"result": "success"}), 200
