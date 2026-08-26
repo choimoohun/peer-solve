@@ -7,14 +7,17 @@ from ..util import stamp_update
 
 
 def find_user_by_id(userId):
-    """로그인 ID로 유저 문서 찾음. 없거나 빈 값이면 None."""
+    """로그인 ID로 유저 문서 찾음. 
+    없거나 빈 값이면 None.
+    """
     if not userId:
         return None
     return db.user.find_one({"ID": userId}, {"_id": 1})
 
 
 def owned_group(user, group_id):
-    """본인이 owner인 그룹만 돌려줌. 아니면 None.
+    """본인이 owner인 그룹만 돌려줌. 
+    없는 경우 None 반환.
     """
     return db.group.find_one(
         {"_id": group_id, "owner": user['_id']},
@@ -23,7 +26,9 @@ def owned_group(user, group_id):
 
 
 def link(group_id, user_id):
-    """멤버 추가. 소속 정보는 group.members 한 곳뿐이라 단일 문서 갱신."""
+    """멤버 추가. 
+    소속 정보는 group.members 한 곳뿐이라 단일 문서 갱신.
+    """
     db.group.update_one(
         {"_id": group_id},
         {"$addToSet": {"members": user_id}, "$set": stamp_update()}
@@ -40,7 +45,8 @@ def unlink(group_id, user_id):
 
 @group_bp.route("/members", methods=['GET'])
 def list_members():
-    """그룹 멤버 목록. query: id
+    """그룹 멤버 목록.
+    query: id
     """
     user = current_user()
     if user is None:
@@ -73,7 +79,9 @@ def list_members():
 
 @group_bp.route("/invite", methods=['POST'])
 def invite_member():
-    """owner가 유저를 그룹에 넣음. 유저는 승인 없이 그룹에 추가됨 query: id / form: userId
+    """owner가 유저를 그룹에 넣음. 
+    유저는 승인 없이 그룹에 추가됨 
+    query: id / form: userId
     """
     user = current_user()
     if user is None:
@@ -100,7 +108,8 @@ def invite_member():
 
 @group_bp.route("/kick", methods=['DELETE'])
 def kick_member():
-    """추방 기능. query: id, userId
+    """추방 기능. 
+    query: id, userId
     """
     user = current_user()
     if user is None:
@@ -131,7 +140,8 @@ def kick_member():
 
 @group_bp.route("/leave", methods=['DELETE'])
 def leave_group():
-    """멤버가 스스로 나가기. query: id
+    """멤버가 스스로 나가기.
+    query: id
     """
     user = current_user()
     if user is None:

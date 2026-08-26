@@ -21,11 +21,12 @@
         <h2 class="section-title">그룹 목록</h2>
         <div class="group-box-list">
             {% for group in groups %}
-            <a class="group-box{% if selected and selected._id == group._id %} is-selected{% endif %}"
-               href="/main?group={{ group._id }}">
-                <span class="group-box-name">{{ group.name }}</span>
-                <span class="group-box-setting"></span>
-            </a>
+            <div class="group-box{% if selected and selected._id == group._id %} is-selected{% endif %}">
+                <a class="group-box-link" href="/main?group={{ group._id }}">
+                    <span class="group-box-name">{{ group.name }}</span>
+                </a>
+                <a class="group-box-setting" href="/groupedit?group={{ group._id }}"></a>
+            </div>
             {% else %}
             <p class="empty-text">아직 그룹이 없습니다.</p>
             {% endfor %}

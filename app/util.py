@@ -1,6 +1,8 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from flask import session
 
 from .db import db
@@ -35,6 +37,29 @@ def current_user():
 def my_groups(user):
     """내가 속한 그룹 목록. group.members 인덱스 태움."""
     return list(db.group.find({"members": user['_id']}, {"_id": 1, "name": 1}))
+
+
+def group_of(user, group_id):
+    """내가 속한 그룹 하나. id가 깨졌거나 남의 그룹이면 None."""
+    try:
+        oid = ObjectId(group_id)
+    except (InvalidId, TypeError):
+        return None
+    return db.group.find_one({"_id": oid, "members": user["_id"]})
+
+
+def group_members(group):
+    """그룹 멤버 목록. 그룹장이 맨 위."""
+    users = db.user.find({"_id": {"$in": group["members"]}}, {"ID": 1, "nickname": 1})
+    members = [
+        {
+            "userId": u["ID"],
+            "nickname": u.get("nickname", "알 수 없음"),
+            "is_owner": u["_id"] == group["owner"],
+        }
+        for u in users
+    ]
+    return sorted(members, key=lambda m: not m["is_owner"])
 
 
 def nickname_of(user_ids):
