@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>메인 화면</title>
+    <title>그룹 생성</title>
     <link rel="stylesheet" href="static/main.css">
 </head>
 
@@ -16,36 +16,17 @@
                 <p>{{ user.nickname }}</p>
                 <a href="/logout">로그아웃</a>
             </div>
-            <div class="group-list">
-                {% for group in groups %}
-                <div>
-                    <a href="/api/group/">
-                        <p>{{ group.name }}</p>
-                        <div id="group-setting-icon">
-                            <img src="" alt="">
-                        </div>
-                    </a>
+            <div class="group-edit-side">
+                <div class="side-text">
+                    <p>그룹 생성</p>
                 </div>
-                {% endfor%}
-            </div>
-            <div class="main-actions">
-                <a href="" id="group-add">그룹 생성</a>
-                <a href="" id="code-upload">코드 올리기</a>
-            </div>
-            <div class="code-list">
-                {% for item in items %}
-                <div class="code-item">
-                    <div class="code-name">
-                        {{ item.codeName}}
-                    </div>
-                    <div class="code-owner">
-                        {{item.owner}}
-                    </div>
-                    <div class="code-date">
-                        {{item.uploadDate}}
-                    </div>
+                <div class="input-group-name">
+                    <input type="text" name="" id="">
                 </div>
-                {% endfor %}
+                <div class="group-create-button">
+                    <a href="/main" id="cancel">취소</a>
+                    <a href="" id="group-create">생성</a>
+                </div>
             </div>
         </div>
     </div>
