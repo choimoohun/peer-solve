@@ -108,7 +108,7 @@ def get_questions():
     return jsonify({"result": "success", "questions": questions}), 200
 
 
-@question_bp.route("/<question_id>", methods=["GET"])
+@question_api_bp.route("/<question_id>", methods=["GET"])
 def get_question(question_id):
     user = current_user()
     if not user:
@@ -140,7 +140,7 @@ def get_question(question_id):
     return jsonify({"result": "success", "question": question})
 
 
-@question_bp.route("/<question_id>/edit", methods=["GET"])
+@question_api_bp.route("/<question_id>/edit", methods=["GET"])
 def edit_question(question_id):
     user = current_user()
     if not user:
@@ -160,7 +160,7 @@ def edit_question(question_id):
     )
 
 
-@question_bp.route("/<question_id>", methods=["PATCH"])
+@question_api_bp.route("/<question_id>", methods=["PUT"])
 def update_question(question_id):
     question = db.question.find_one({"_id": ObjectId(question_id)})
     if not question:
