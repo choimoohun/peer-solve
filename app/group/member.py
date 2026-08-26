@@ -73,7 +73,7 @@ def list_members():
 
 @group_bp.route("/invite", methods=['POST'])
 def invite_member():
-    """승인 절차 없이 owner가 유저를 그룹에 넣음. query: id / form: userId
+    """owner가 유저를 그룹에 넣음. 유저는 승인 없이 그룹에 추가됨 query: id / form: userId
     """
     user = current_user()
     if user is None:
