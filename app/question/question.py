@@ -1,7 +1,3 @@
-# [변경 안내] group.questions 배열을 걷어냄. 질문-그룹 관계는 question.group_id
-# 하나만 정본으로 씀. 이유는 각 함수 주석 참고. 되돌리려면 group 문서에 배열을
-# 다시 두고 upload/delete 양쪽에서 $push/$pull 을 살려야 함.
-
 from bson import ObjectId
 from flask import request, jsonify, session, render_template
 
@@ -9,6 +5,9 @@ from . import question_bp
 from ..db import db
 from ..util import stamp_create, stamp_update
 
+# group.questions 배열을 걷어냄. 질문-그룹 관계는 question.group_id
+# 하나만 정본으로 씀. 이유는 각 함수 주석 참고. 되돌리려면 group 문서에 배열을
+# 다시 두고 upload/delete 양쪽에서 $push/$pull 을 살려야 함.
 
 def current_user():
     user_id = session.get("user_login")
@@ -92,7 +91,7 @@ def get_questions():
     # 예전엔 {"_id": {"$in": group["questions"]}} 로 찾았음. 그런데 insert_group()
     # 이 questions 키를 안 만들어서, 질문이 0개인 새 그룹에서 KeyError 500 이 났음.
     # 이제 group 문서를 안 보고 question 쪽에서 역으로 찾음.
-    # db.py 의 (group_id, at_create DESC) 복합 인덱스를 그대로 태움.
+    # db.py 의 (group_id, at_create 내림차순) 복합 인덱스를 그대로 태움.
     # 부수 효과로 정렬이 삽입순 -> 최신순으로 바뀜.
     questions = list(
         db.question.find({"group_id": group["_id"]}).sort("at_create", -1)
