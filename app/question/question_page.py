@@ -27,13 +27,14 @@ def get_question(question_id):
     if not question:
         return jsonify({"result": "failure", "message": "코드를 찾지 못했습니다."}), 404
 
-    question["_id"] = str(question["_id"])
-    question["owner"] = str(question["owner"])
-    question["group_id"] = str(question["group_id"])
+    owner = db.user.find_one({"_id": question["owner"]})
+    is_owner = question["owner"] == user["_id"]
 
     return render_template(
         "question/question.html",
-        question=question
+        question=question,
+        owner=owner,
+        is_owner=is_owner
     )
 
 
