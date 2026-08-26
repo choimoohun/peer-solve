@@ -1,16 +1,3 @@
-'''
-  "group": {
-    "_id": "ObjectId",
-    "name": "String",
-    "members": [
-      "ObjectId (user_profile._id)"
-    ],
-    "owner": "ObjectId (user_profile._id)",
-    "at_create": "Timestamp",
-    "at_update": "Timestamp"
-  },
-'''
-
 from bson import ObjectId
 from bson.errors import InvalidId
 from flask import jsonify, request, redirect, url_for
@@ -54,7 +41,7 @@ def request_group_list():
 def insert_group(user_id, name):
     """그룹 문서 생성 + 생성자를 owner 겸 첫 멤버로 등록. group_id 반환.
 
-    group.members 와 user.join_groups 를 같이 건드리므로 그룹 생성은 여기로만.
+    소속 정보는 group.members 한 곳에만 둠. 단일 문서 삽입이라 원자적.
     """
     result = db.group.insert_one({
         "name": name,
@@ -62,12 +49,6 @@ def insert_group(user_id, name):
         "owner": user_id,
         **stamp_create()
     })
-
-    db.user.update_one(
-        {"_id": user_id},
-        {"$addToSet": {"join_groups": result.inserted_id},
-         "$set": stamp_update()}
-    )
 
     return result.inserted_id
 
@@ -119,11 +100,6 @@ def delete_group():
     })
 
     if result.deleted_count == 1:
-        # 멤버들 join_groups에 남은 id 청소. 안 하면 없는 그룹을 가리키는 쓰레기가 쌓임
-        db.user.update_many(
-            {"join_groups": group_id},
-            {"$pull": {"join_groups": group_id}, "$set": stamp_update()}
-        )
         return jsonify({"result": 1}), 200
     return jsonify({"result": 0, "error": "그룹을 찾을 수 없습니다."}), 404
 

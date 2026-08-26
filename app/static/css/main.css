@@ -1,3 +1,4 @@
+/* 즐겁다 */
 * {
     box-sizing: border-box;
 }
@@ -76,6 +77,12 @@ body {
     font-weight: 700;
 }
 
+.section-sub-title {
+    margin: 0 0 10px 10px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
 /* 그룹 목록 */
 .group-box-list {
     display: flex;
@@ -117,6 +124,18 @@ body {
     height: 50px;
     border-radius: 999px;
     background: #C7C7C7;
+}
+
+.group-box.is-selected {
+    outline: 3px solid #000;
+    outline-offset: -3px;
+}
+
+.section-title-reset {
+    margin-left: 10px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #666;
 }
 
 /* 액션 버튼 */
@@ -172,4 +191,74 @@ body {
 
 .code-date {
     font-weight: 400;
+}
+
+/* 로그인 / 회원가입 */
+.auth-content {
+    width: 420px;
+    margin-top: 60px;
+    padding: 40px 30px;
+}
+
+.auth-content .section-title,
+.auth-content .section-sub-title {
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.auth-form .input-group {
+    margin-bottom: 14px;
+}
+
+.auth-form input {
+    width: 100%;
+    height: 52px;
+    padding: 0 18px;
+    border: 1px solid #CACACA;
+    border-radius: 20px;
+    background: #FFF;
+    font: inherit;
+    font-size: 18px;
+}
+
+.auth-form input::placeholder {
+    color: #8A8A8A;
+}
+
+.auth-form .button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding-top: 16px;
+}
+
+.auth-form .btn {
+    flex: 1 1 0;
+    width: auto;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-primary {
+    border-color: #000;
+    background: #000;
+    color: #FFF;
+}
+
+.auth-link {
+    display: block;
+    margin-top: 20px;
+    color: #8A8A8A;
+    font-size: 18px;
+    text-align: center;
+}
+
+.auth-error {
+    margin: -10px 0 16px;
+    padding: 12px;
+    border-radius: 20px;
+    background: #FDECEC;
+    color: #C0392B;
+    font-size: 16px;
+    text-align: center;
 }
