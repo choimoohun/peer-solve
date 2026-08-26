@@ -140,26 +140,6 @@ def get_question(question_id):
     return jsonify({"result": "success", "question": question})
 
 
-@question_api_bp.route("/<question_id>/edit", methods=["GET"])
-def edit_question(question_id):
-    user = current_user()
-    if not user:
-        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
-
-    question = db.question.find_one({"_id": ObjectId(question_id)})
-    if not question:
-        return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
-
-    if question["owner"] != user["_id"]:
-        return jsonify({"result": "failure", "message": "수정 권한이 필요합니다."}), 403
-
-    return render_template(
-        "question/question_form.html",
-        question=question,
-        mode="edit"
-    )
-
-
 @question_api_bp.route("/<question_id>", methods=["PUT"])
 def update_question(question_id):
     question = db.question.find_one({"_id": ObjectId(question_id)})
