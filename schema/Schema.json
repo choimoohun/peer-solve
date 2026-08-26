@@ -1,43 +1,40 @@
 {
-  "user_profile": {
+  "user": {
     "_id": "ObjectId",
-    "ID": "String",
-    "password": "String",
-    "nickname": "String",
-    "avatar": "String (URL)",
-    "join_groups": [
-      "ObjectId (group._id)"
-    ],
-    "at_create": "Timestamp",
-    "at_update": "Timestamp"
+    "ID": "String (로그인 ID, unique)",
+    "password": "String (werkzeug 해시)",
+    "nickname": "String (가입 시 랜덤 생성, unique)",
+    "at_create": "Timestamp (KST)",
+    "at_update": "Timestamp (KST)"
   },
 
   "group": {
     "_id": "ObjectId",
     "name": "String",
     "members": [
-      "ObjectId (user_profile._id)"
+      "ObjectId (user._id) - owner 포함"
     ],
-    "owner": "ObjectId (user_profile._id)",
-    "at_create": "Timestamp",
-    "at_update": "Timestamp"
+    "owner": "ObjectId (user._id)",
+    "at_create": "Timestamp (KST)",
+    "at_update": "Timestamp (KST)"
   },
 
   "question": {
     "_id": "ObjectId",
+    "title": "String",
     "language": "String",
     "code": "String",
-    "owner": "ObjectId (user_profile._id)",
+    "owner": "ObjectId (user._id)",
     "group_id": "ObjectId (group._id)",
-    "at_create": "Timestamp",
-    "at_update": "Timestamp"
+    "at_create": "Timestamp (KST)",
+    "at_update": "Timestamp (KST)"
   },
-  
+
   "comment": {
     "_id": "ObjectId",
     "text": "String",
-    "owner": "ObjectId (user_profile._id)",
+    "owner": "ObjectId (user._id)",
     "question_id": "ObjectId (question._id)",
-    "at_create": "Timestamp"
+    "at_create": "Timestamp (KST)"
   }
 }

@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, request, session, url_for
 
 import sys
 
@@ -23,8 +23,18 @@ def render_main():
     if user is None:
         return redirect(url_for('render_login'))
     groups = my_groups(user)
-    items = question_items(g["_id"] for g in groups)
-    return render_template('main.html', user=user, groups=groups, items=items)
+
+    # ?group=<id> 면 그 그룹만. 내 그룹 목록에서 직접 골라내므로 남의 그룹 id를
+    # 넣어도 안 걸리고, 형식이 깨진 id도 문자열 비교라 예외 안 남
+    selected = next(
+        (g for g in groups if str(g["_id"]) == request.args.get("group")), None
+    )
+
+    # 세션 값으로 대상 그룹을 잡음
+    session["selected_group"] = str(selected["_id"]) if selected else None
+
+    items = question_items([selected["_id"]] if selected else [g["_id"] for g in groups])
+    return render_template('main.html', user=user, groups=groups, items=items, selected=selected)
 
 # 로그인
 @app.route('/signup')
@@ -37,9 +47,7 @@ def render_login():
 
 @app.route('/upload')
 def render_upload():
-    return render_template('question/question_form.html',
-                           question=None,
-                           mode="create")
+    return render_template('question/question_form.html', question=None, mode="create")
 
 if __name__ == '__main__':
     print(sys.executable)
