@@ -1,7 +1,7 @@
 from bson import ObjectId
 from flask import request, jsonify, session, render_template
 
-from . import question_bp
+from . import question_api_bp
 from ..db import db
 from ..util import stamp_create, stamp_update
 
@@ -20,7 +20,7 @@ def current_group():
     return db.group.find_one({"_id": ObjectId(group_id)})
 
 
-@question_bp.route("/", methods=["POST"])
+@question_api_bp.route("/", methods=["POST"])
 def upload_question():
     user = current_user()
     if not user:
@@ -70,7 +70,7 @@ def upload_question():
     return jsonify({"result": "success", "question_id": str(result.inserted_id)}), 201
 
 
-@question_bp.route("/list", methods=["GET"])
+@question_api_bp.route("/list", methods=["GET"])
 def get_questions():
     user = current_user()
     if not user:
@@ -99,55 +99,7 @@ def get_questions():
     return jsonify({"result": "success", "questions": questions}), 200
 
 
-@question_bp.route("/<question_id>", methods=["GET"])
-def get_question(question_id):
-    user = current_user()
-    if not user:
-        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
-
-    group = current_group()
-    if not group:
-        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
-
-    if user["_id"] not in group["members"]:
-        return (
-            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
-            403,
-        )
-
-    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": group["_id"]})
-
-    if not question:
-        return jsonify({"result": "failure", "message": "코드를 찾지 못했습니다."}), 404
-
-    question["_id"] = str(question["_id"])
-    question["owner"] = str(question["owner"])
-    question["group_id"] = str(question["group_id"])
-
-    return jsonify({"result": "success", "question": question})
-
-
-@question_bp.route("/<question_id>/edit", methods=["GET"])
-def edit_question(question_id):
-    user = current_user()
-    if not user:
-        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
-
-    question = db.question.find_one({"_id": ObjectId(question_id)})
-    if not question:
-        return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
-
-    if question["owner"] != user["_id"]:
-        return jsonify({"result": "failure", "message": "수정 권한이 필요합니다."}), 403
-
-    return render_template(
-        "question/question_form.html",
-        question=question,
-        mode="edit"
-    )
-
-
-@question_bp.route("/<question_id>", methods=["PATCH"])
+@question_api_bp.route("/<question_id>", methods=["PATCH"])
 def update_question(question_id):
     question = db.question.find_one({"_id": ObjectId(question_id)})
     if not question:
@@ -197,7 +149,7 @@ def update_question(question_id):
     return jsonify({"result": "success", "question_id": question_id}), 200
 
 
-@question_bp.route("/<question_id>", methods=["DELETE"])
+@question_api_bp.route("/<question_id>", methods=["DELETE"])
 def delete_question(question_id):
     user = current_user()
     if not user:

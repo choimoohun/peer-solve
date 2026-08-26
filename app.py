@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for
 
 import sys
 
-from app import api_bp
+from app import api_bp, page_bp
 from app.util import current_user, my_groups, question_items
 
 app = Flask(__name__, static_folder='app/static', template_folder='app/templates')
@@ -11,7 +11,7 @@ app = Flask(__name__, static_folder='app/static', template_folder='app/templates
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 # 블루프린트 등록 관리
 app.register_blueprint(api_bp)
-
+app.register_blueprint(page_bp)
 
 @app.route('/')
 def render_index():
