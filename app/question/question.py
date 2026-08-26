@@ -1,55 +1,230 @@
-from flask import request, jsonify
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from bson import ObjectId
+from flask import request, jsonify, session, render_template
 
 from . import question_bp
-from db import db
+from ..db import db
+from ..util import stamp_create, stamp_update
 
 
-def is_auth(user_id, group_id):
-    # TODO: 실제 그룹원 확인
-    return True
+def current_user():
+    user_id = session.get("user_login")
+    if not user_id:
+        return None
+    return db.user.find_one({"ID": user_id}, {"_id": 1})
 
 
-KST = ZoneInfo("Asia/Seoul")
+def current_group():
+    group_id = session.get("selected_group")
+    if not group_id:
+        return None
+    return db.group.find_one({"_id": ObjectId(group_id)})
 
 
 @question_bp.route("/", methods=["POST"])
 def upload_question():
-    user_id = "user1" # 임시 값
-    group_id = "group1" # 임시 값
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    group = current_group()
+    if not group:
+        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
 
     title = request.form.get("title")
     language = request.form.get("language")
     code = request.form.get("code")
 
     if not title:
-        return jsonify({"result": "failure", "message": "타이틀이 비어있습니다"}), 400
+        return jsonify({"result": "failure", "message": "타이틀이 비어있습니다."}), 400
 
     if not language:
         return (
-            jsonify({"result": "failure", "message": "언어가 선택되지 않았습니다"}),
+            jsonify({"result": "failure", "message": "언어가 선택되지 않았습니다."}),
             400,
         )
 
     if not code:
-        return jsonify({"result": "failure", "message": "코드가 비어있습니다"}), 400
-
-    if not is_auth(user_id, group_id):
-        return jsonify({"result": "failure", "message": "업로드 권한이 없습니다"}), 403
-
-    now = datetime.now(KST)
+        return jsonify({"result": "failure", "message": "코드가 비어있습니다."}), 400
 
     data = {
-        "owner": user_id,
-        "group_id": group_id,
+        "owner": user["_id"],
+        "group_id": group["_id"],
         "title": title,
         "language": language,
         "code": code,
-        "at_create": now,
-        "at_update": now,
+        **stamp_create(),
     }
 
-    db.questions.insert_one(data)
+    result = db.question.insert_one(data)
 
-    return jsonify({"result": "success"}), 201
+    db.group.update_one(
+        {"_id": group["_id"]}, {"$push": {"questions": result.inserted_id}}
+    )
+
+    return jsonify({"result": "success", "question_id": str(result.inserted_id)}), 201
+
+
+@question_bp.route("/list", methods=["GET"])
+def get_questions():
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    group = current_group()
+    if not group:
+        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
+
+    questions = list(db.question.find({"_id": {"$in": group["questions"]}}))
+
+    if not questions:
+        return jsonify({"result": "success", "questions": []}), 200
+
+    for question in questions:
+        question["_id"] = str(question["_id"])
+        question["owner"] = str(question["owner"])
+        question["group_id"] = str(question["group_id"])
+
+    return jsonify({"result": "success", "questions": questions}), 200
+
+
+@question_bp.route("/<question_id>", methods=["GET"])
+def get_question(question_id):
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    group = current_group()
+    if not group:
+        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
+
+    question = db.question.find_one({}, {"_id": ObjectId(question_id), "group_id": group["_id"]})
+
+    if not question:
+        return jsonify({"result": "failure", "message": "코드를 찾지 못했습니다."}), 404
+
+    question["_id"] = str(question["_id"])
+    question["owner"] = str(question["owner"])
+    question["group_id"] = str(question["group_id"])
+
+    return jsonify({"result": "success", "question": question})
+
+
+@question_bp.route("/<question_id>/edit", methods=["GET"])
+def edit_question(question_id):
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    question = db.question.find_one({"_id": ObjectId(question_id)})
+    if not question:
+        return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
+
+    if question["owner"] != user["_id"]:
+        return jsonify({"result": "failure", "message": "수정 권한이 필요합니다."}), 403
+
+    return render_template(
+        "question/question_form.html",
+        question=question,
+        mode="edit"
+    )
+
+
+@question_bp.route("/<question_id>", methods=["PATCH"])
+def update_question(question_id):
+    question = db.question.find_one({"_id": ObjectId(question_id)})
+    if not question:
+        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
+
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+    if question["owner"] != user["_id"]:
+        return jsonify({"result": "failure", "message": "작성자가 아닙니다."}), 403
+
+    group = db.group.find_one({"_id": question["group_id"]})
+    if not group:
+        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
+
+    title = request.form.get("title")
+    language = request.form.get("language")
+    code = request.form.get("code")
+
+    if not title:
+        return jsonify({"result": "failure", "message": "타이틀이 비어있습니다."}), 400
+
+    if not language:
+        return (
+            jsonify({"result": "failure", "message": "언어가 선택되지 않았습니다."}),
+            400,
+        )
+
+    if not code:
+        return jsonify({"result": "failure", "message": "코드가 비어있습니다."}), 400
+
+    data = {
+        "title": title,
+        "language": language,
+        "code": code,
+        **stamp_update(),
+    }
+
+    db.question.update_one({"_id": question["_id"]}, {"$set": data})
+
+    return jsonify({"result": "success", "question_id": question_id}), 200
+
+
+@question_bp.route("/<question_id>", methods=["DELETE"])
+def delete_question(question_id):
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    question = db.question.find_one({"_id": ObjectId(question_id)})
+    if not question:
+        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
+
+    if question["owner"] != user["_id"]:
+        return jsonify({"result": "failure", "message": "작성자만 코드를 삭제할 수 있습니다."}), 403
+
+    group = db.group.find_one({"_id": question["group_id"]})
+    if not group:
+        return jsonify({"result": "failure", "message": "그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
+
+    db.group.update_one(
+        {"_id": group["_id"]},
+        {"$pull": {"questions": question["_id"]}},
+    )
+
+    db.question.delete_one({"_id": question["_id"]})
+
+    return jsonify({"result": "success"}), 200

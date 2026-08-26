@@ -35,14 +35,11 @@ def render_signup():
 def render_login():
     return render_template('auth/login.html')
 
-# 그룹
-@app.route('/groupedit')
-def render_group_edit():
-    return render_template('group/gorup_edit.html')
-
-@app.route('/groupcreate')
-def render_group_create():
-    return render_template('group/group_create.html')
+@app.route('/upload')
+def render_upload():
+    return render_template('question/question_form.html',
+                           question=None,
+                           mode="create")
 
 if __name__ == '__main__':
     print(sys.executable)
