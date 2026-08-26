@@ -220,6 +220,8 @@ def delete_question(question_id):
             403,
         )
 
+    db.comment.delete_many({"question_id": question["_id"]})
+
     db.group.update_one(
         {"_id": group["_id"]},
         {"$pull": {"questions": question["_id"]}},
