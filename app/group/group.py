@@ -9,7 +9,9 @@ from ..util import current_user, stamp_create, stamp_update
 
 
 def parse_group_id():
-    """쿼리스트링 id를 ObjectId로 바꿈. 형식 틀리면 None (24자리 hex 아니면 예외 남)."""
+    """쿼리스트링 id를 ObjectId로 변경.
+    형식 틀리면 None (24자리 hex 아니면 예외 남)
+    """
     try:
         return ObjectId(request.args.get('id'))
     except (InvalidId, TypeError):
@@ -18,7 +20,8 @@ def parse_group_id():
 
 @group_bp.route("/info", methods=['GET'])
 def request_group_list():
-    """내가 속한 그룹 목록. [{id, name, is_owner}] 형태.
+    """내가 속한 그룹 목록. 
+    [{id, name, is_owner}]
     """
     user = current_user()
     if user is None:
@@ -39,9 +42,7 @@ def request_group_list():
 
 
 def insert_group(user_id, name):
-    """그룹 문서 생성 + 생성자를 owner 겸 첫 멤버로 등록. group_id 반환.
-
-    소속 정보는 group.members 한 곳에만 둠. 단일 문서 삽입이라 원자적.
+    """그룹 문서 생성 및 생성자를 owner 겸 첫 멤버로 등록. group_id 반환.
     """
     result = db.group.insert_one({
         "name": name,
@@ -84,7 +85,8 @@ def create_group():
 
 @group_bp.route("/delete", methods=['DELETE'])
 def delete_group():
-    """본인이 owner인 그룹 지움. query: id
+    """본인이 owner인 그룹 지움. 
+    query: id
     """
     user = current_user()
     if user is None:
@@ -106,7 +108,8 @@ def delete_group():
 
 @group_bp.route("/edit", methods=['PUT'])
 def edit_group_name():
-    """그룹 이름 변경. query: id, change
+    """그룹 이름 변경. 
+    query: id, change
     """
     user = current_user()
     if user is None:

@@ -1,0 +1,53 @@
+.group-name-field {
+    padding: 0 10px;
+}
+
+.group-name-field input {
+    width: 100%;
+    height: 60px;
+    padding: 0 20px;
+    border: 1px solid #CACACA;
+    border-radius: 20px;
+    background: #FFF;
+    font: inherit;
+    font-size: 20px;
+}
+
+.group-name-field input:disabled {
+    background: #F4F4F4;
+    color: #8A8A8A;
+}
+
+button.btn {
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.group-tabs {
+    display: flex;
+    gap: 20px;
+    padding: 0 0 20px;
+}
+
+.group-tabs-right {
+    margin-left: auto;
+}
+
+.member-item {
+    align-items: center;
+    height: 86px;
+}
+
+.member-badge {
+    margin-left: 8px;
+    color: #8A8A8A;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.member-kick {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 10px 24px;
+    font-size: 16px;
+}

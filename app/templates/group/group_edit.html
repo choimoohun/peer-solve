@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그룹 관리</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/group/group_edit.css">
+</head>
+
+<body data-group-id="{{ group._id }}">
+    <header class="main-header">
+        <h1 class="header-title">간단 코드 리뷰</h1>
+        <div class="user-info">
+            <span class="user-nickname">{{ user.nickname }}</span>
+            <a href="/api/auth/logout" class="btn">로그아웃</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <h2 class="section-title">그룹 관리</h2>
+
+        <div class="group-name-field">
+            <input type="text" id="input-group-name" value="{{ group.name }}"  placeholder="그룹 이름" {% if not is_owner %}disabled{% endif %}>
+        </div>
+
+        {% if is_owner %}
+        <div class="main-actions">
+            <button type="button" class="btn" id="btn-group-delete">그룹 삭제</button>
+            <button type="button" class="btn btn-primary" id="btn-group-rename">수정</button>
+        </div>
+        {% else %}
+        <div class="main-actions">
+            <button type="button" class="btn" id="btn-group-leave">그룹 나가기</button>
+        </div>
+        {% endif %}
+
+        <div class="group-tabs">
+            <a class="btn{% if tab == 'member' %} btn-primary{% endif %}" href="/groupedit?group={{ group._id }}&tab=member">멤버</a>
+            <a class="btn{% if tab == 'code' %} btn-primary{% endif %}" href="/groupedit?group={{ group._id }}&tab=code">소스 코드</a>
+            {% if is_owner and tab == 'member' %}
+            <button type="button" class="btn group-tabs-right" id="btn-member-invite">멤버 초대</button>
+            {% endif %}
+        </div>
+
+        <div class="code-list">
+            {% if tab == 'member' %}
+                {% for member in members %}
+                <div class="code-item member-item">
+                    <span class="code-name">
+                        {{ member.nickname }}{% if member.is_owner %} <span class="member-badge">그룹장</span>{% endif %}
+                    </span>
+                    {% if is_owner and not member.is_owner %}
+                    <button type="button" class="btn member-kick" data-user-id="{{ member.userId }}">추방</button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="empty-text">멤버가 없습니다.</p>
+                {% endfor %}
+            {% else %}
+                {% for item in items %}
+                <div class="code-item">
+                    <span class="code-name">{{ item.title }}</span>
+                    <span class="code-meta">
+                        <span class="code-owner">{{ item.owner }}</span>
+                        <span class="code-date">{{ item.at_create }}</span>
+                    </span>
+                </div>
+                {% else %}
+                <p class="empty-text">올라온 코드가 없습니다.</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/static/js/group_edit.js"></script>
+</body>
+
+</html>
