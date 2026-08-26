@@ -70,6 +70,35 @@ def upload_question():
     return jsonify({"result": "success", "question_id": str(result.inserted_id)}), 201
 
 
+@question_bp.route("/list", methods=["GET"])
+def get_questions():
+    user = current_user()
+    if not user:
+        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
+
+    group = current_group()
+    if not group:
+        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+
+    if user["_id"] not in group["members"]:
+        return (
+            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
+            403,
+        )
+
+    questions = list(db.question.find({"_id": {"$in": group["questions"]}}))
+
+    if not questions:
+        return jsonify({"result": "success", "questions": []}), 200
+
+    for question in questions:
+        question["_id"] = str(question["_id"])
+        question["owner"] = str(question["owner"])
+        question["group_id"] = str(question["group_id"])
+
+    return jsonify({"result": "success", "questions": questions}), 200
+
+
 @question_bp.route("/<question_id>/edit", methods=["GET"])
 def edit_question(question_id):
     user = current_user()
