@@ -104,6 +104,12 @@ body {
     text-decoration: none;
 }
 
+.group-box-link {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
 .group-box-name {
     position: absolute;
     left: 12px;
@@ -118,12 +124,26 @@ body {
 
 .group-box-setting {
     position: absolute;
+    z-index: 1;
     top: 4px;
     right: 10px;
+    display: flex;
     width: 50px;
     height: 50px;
+    align-items: center;
+    justify-content: center;
     border-radius: 999px;
-    background: #C7C7C7;
+    opacity: .45;
+}
+
+.group-box-setting:hover {
+    background: #F4F4F4;
+    opacity: 1;
+}
+
+.group-box-setting img {
+    width: 24px;
+    height: 24px;
 }
 
 .group-box.is-selected {
