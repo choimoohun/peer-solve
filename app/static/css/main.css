@@ -1,0 +1,10 @@
+.main-content {
+    width: 1024px;
+}
+
+.main-header {
+    align-self: stretch;
+    grid-row: span 1;
+    grid-column: span 1;
+    justify-self: stretch;
+}

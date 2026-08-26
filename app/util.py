@@ -1,6 +1,10 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from flask import session
+
+from .db import db
+
 KST = ZoneInfo("Asia/Seoul")
 
 
@@ -18,3 +22,11 @@ def stamp_create():
 def stamp_update():
     """수정용. $set에 펼쳐 씀."""
     return {"at_update": now()}
+
+
+def current_user():
+    """세션에 로그인된 유저 문서. 없으면 None."""
+    userId = session.get('user_login')
+    if not userId:
+        return None
+    return db.user.find_one({"ID": userId}, {"_id": 1, "ID": 1, "nickname": 1})

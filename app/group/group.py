@@ -13,20 +13,12 @@
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from flask import jsonify, request, session, redirect, url_for
+from flask import jsonify, request, redirect, url_for
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from . import group_bp
 from ..db import db
-from ..util import stamp_create, stamp_update
-
-
-def current_user():
-    """세션에 로그인된 유저 문서. 없으면 None."""
-    userId = session.get('user_login')
-    if not userId:
-        return None
-    return db.user.find_one({"ID": userId}, {"_id": 1})
+from ..util import current_user, stamp_create, stamp_update
 
 
 def parse_group_id():
@@ -59,6 +51,27 @@ def request_group_list():
     return jsonify(group_list), 200
 
 
+def insert_group(user_id, name):
+    """그룹 문서 생성 + 생성자를 owner 겸 첫 멤버로 등록. group_id 반환.
+
+    group.members 와 user.join_groups 를 같이 건드리므로 그룹 생성은 여기로만.
+    """
+    result = db.group.insert_one({
+        "name": name,
+        "members": [user_id],
+        "owner": user_id,
+        **stamp_create()
+    })
+
+    db.user.update_one(
+        {"_id": user_id},
+        {"$addToSet": {"join_groups": result.inserted_id},
+         "$set": stamp_update()}
+    )
+
+    return result.inserted_id
+
+
 @group_bp.route("/create", methods=['POST'])
 def create_group():
     """그룹 만들고 생성자를 owner 겸 첫 멤버로 넣음.
@@ -73,30 +86,17 @@ def create_group():
     if not group_name:
         return jsonify({"result": 0, "error": "그룹 이름을 입력하세요."}), 400
 
-    info = {
-        "name": group_name,
-        "members": [user['_id']],
-        "owner": user['_id'],
-        **stamp_create()
-    }
-
     # 좀 예쁘게 주지
     try:
-        result = db.group.insert_one(info)
+        group_id = insert_group(user['_id'], group_name)
     except DuplicateKeyError:
         return jsonify({"result": 0, "error": "이미 존재하는 그룹입니다."}), 409
     except PyMongoError as e:
         return jsonify({"result": 0, "error": f"데이터베이스 오류가 발생했습니다: {str(e)}"}), 500
 
-    db.user.update_one(
-        {"_id": user['_id']},
-        {"$addToSet": {"join_groups": result.inserted_id},
-        "$set": stamp_update()}
-    )
-
     return jsonify({
         "result": 1,
-        "group_id": str(result.inserted_id),
+        "group_id": str(group_id),
         "redirect": url_for('render_main')
     }), 201
 

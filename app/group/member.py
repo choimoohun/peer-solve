@@ -1,9 +1,3 @@
-"""그룹 멤버 관리. 초대 / 추방 / 나가기 / 목록.
-
-group.members 와 user_profile.join_groups 는 같은 관계를 양쪽에서 들고 있음.
-한쪽만 고치면 바로 어긋나므로 관계 변경은 반드시 link() / unlink()로만 함.
-"""
-
 from flask import jsonify, request
 
 from . import group_bp
@@ -123,7 +117,7 @@ def kick_member():
     """
     user = current_user()
     if user is None:
-        return jsonify({"result": 0, "error": "로그인이 필요합니능다."}), 401
+        return jsonify({"result": 0, "error": "로그인이 필요합니다."}), 401
 
     group_id = parse_group_id()
     if group_id is None:
