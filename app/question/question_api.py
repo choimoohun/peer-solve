@@ -5,6 +5,7 @@ from . import question_api_bp
 from ..db import db
 from ..util import stamp_create, stamp_update
 
+
 # group.questions 배열을 걷어냄. 질문-그룹 관계는 question.group_id
 # 하나만 정본으로 씀. 이유는 각 함수 주석 참고. 되돌리려면 group 문서에 배열을
 # 다시 두고 upload/delete 양쪽에서 $push/$pull 을 살려야 함.
@@ -142,17 +143,11 @@ def get_question(question_id):
 
 @question_api_bp.route("/<question_id>", methods=["PUT"])
 def update_question(question_id):
-    question = db.question.find_one({"_id": ObjectId(question_id)})
-    if not question:
-        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
-
     user = current_user()
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
-    if question["owner"] != user["_id"]:
-        return jsonify({"result": "failure", "message": "작성자가 아닙니다."}), 403
 
-    group = db.group.find_one({"_id": question["group_id"]})
+    group = current_group()
     if not group:
         return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
 
@@ -161,6 +156,13 @@ def update_question(question_id):
             jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
             403,
         )
+
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": group["_id"]})
+    if not question:
+        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
+
+    if question["owner"] != user["_id"]:
+        return jsonify({"result": "failure", "message": "작성자가 아닙니다."}), 403
 
     title = request.form.get("title")
     language = request.form.get("language")
@@ -196,14 +198,7 @@ def delete_question(question_id):
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
 
-    question = db.question.find_one({"_id": ObjectId(question_id)})
-    if not question:
-        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
-
-    if question["owner"] != user["_id"]:
-        return jsonify({"result": "failure", "message": "작성자만 코드를 삭제할 수 있습니다."}), 403
-
-    group = db.group.find_one({"_id": question["group_id"]})
+    group = current_group()
     if not group:
         return jsonify({"result": "failure", "message": "그룹이 없습니다."}), 400
 
@@ -212,6 +207,13 @@ def delete_question(question_id):
             jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
             403,
         )
+
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": group["_id"]})
+    if not question:
+        return jsonify({"result": "failure", "message": "코드를 찾을 수 없습니다."}), 404
+
+    if question["owner"] != user["_id"]:
+        return jsonify({"result": "failure", "message": "작성자만 코드를 삭제할 수 있습니다."}), 403
 
     db.group.update_one(
         {"_id": group["_id"]},
