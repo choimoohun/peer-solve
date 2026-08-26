@@ -115,7 +115,7 @@ def get_question(question_id):
             403,
         )
 
-    question = db.question.find_one({}, {"_id": ObjectId(question_id), "group_id": group["_id"]})
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": group["_id"]})
 
     if not question:
         return jsonify({"result": "failure", "message": "코드를 찾지 못했습니다."}), 404
