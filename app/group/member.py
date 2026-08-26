@@ -23,31 +23,18 @@ def owned_group(user, group_id):
 
 
 def link(group_id, user_id):
-    """멤버 링크. group.members와 user.join_groups 양쪽 모두.
-    """
+    """멤버 추가. 소속 정보는 group.members 한 곳뿐이라 단일 문서 갱신."""
     db.group.update_one(
         {"_id": group_id},
         {"$addToSet": {"members": user_id}, "$set": stamp_update()}
     )
 
-    db.user.update_one(
-        {"_id": user_id},
-        {"$addToSet": {"join_groups": group_id}, "$set": stamp_update()}
-    )
-
 
 def unlink(group_id, user_id):
-    """멤버 링크 해제.
-
-    추방/나가기/그룹삭제가 전부 이 함수 거쳐야 두 컬렉션이 안 어긋남.
-    """
+    """멤버 제거. 추방/나가기 공용."""
     db.group.update_one(
         {"_id": group_id},
         {"$pull": {"members": user_id}, "$set": stamp_update()}
-    )
-    db.user.update_one(
-        {"_id": user_id},
-        {"$pull": {"join_groups": group_id}, "$set": stamp_update()}
     )
 
 

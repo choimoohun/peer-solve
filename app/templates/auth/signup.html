@@ -5,33 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원가입</title>
+    <link rel="stylesheet" href="/static/css/main.css">
 </head>
 
 <body>
-    <div class="signup-container">
-        <section class="signup-box">
-            <h1 class="signup-title">회원가입</h1>
+    <header class="main-header">
+        <h1 class="header-title">간단 코드 리뷰</h1>
+    </header>
 
-            <form action="/api/auth/signup" method="POST" class="signup-form">
-                <div class="input-group">
-                    <input type="text" id="userId" name="userId" placeholder="아이디를 입력하세요" required autocomplete="username">
-                </div>
+    <main class="main-content auth-content">
+        <h2 class="section-title">회원가입</h2>
 
-                <div class="input-group">
-                    <input type="password" id="userPassword" name="userPassword" placeholder="비밀번호를 입력하세요" required autocomplete="new-password">
-                </div>
+        <form action="/api/auth/signup" method="POST" class="auth-form">
+            <div class="input-group">
+                <input type="text" id="userId" name="userId" placeholder="아이디를 입력하세요" required autocomplete="username">
+            </div>
 
-                <div class="input-group">
-                    <input type="password" id="userConfirmPassword" name="userConfirmPassword" placeholder="다시 비밀번호를 입력하세요" required autocomplete="new-password">
-                </div>
+            <div class="input-group">
+                <input type="password" id="userPassword" name="userPassword" placeholder="비밀번호를 입력하세요" required autocomplete="new-password">
+            </div>
 
-                <div class="button-group">
-                    <button type="button" onclick="location.href='/login'" class="btn-cancel">취소</button>
-                    <button type="submit" class="btn-submit">회원가입</button>
-                </div>
-            </form>
-        </section>
-    </div>
+            <div class="input-group">
+                <input type="password" id="userConfirmPassword" name="userConfirmPassword" placeholder="다시 비밀번호를 입력하세요" required autocomplete="new-password">
+            </div>
+
+            <div class="button-group">
+                <button type="button" onclick="location.href='/login'" class="btn">취소</button>
+                <button type="submit" class="btn btn-primary">회원가입</button>
+            </div>
+        </form>
+    </main>
 </body>
 
 </html>

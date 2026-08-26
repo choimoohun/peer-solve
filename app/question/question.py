@@ -1,3 +1,7 @@
+# [변경 안내] group.questions 배열을 걷어냄. 질문-그룹 관계는 question.group_id
+# 하나만 정본으로 씀. 이유는 각 함수 주석 참고. 되돌리려면 group 문서에 배열을
+# 다시 두고 upload/delete 양쪽에서 $push/$pull 을 살려야 함.
+
 from bson import ObjectId
 from flask import request, jsonify, session, render_template
 
@@ -61,11 +65,10 @@ def upload_question():
         **stamp_create(),
     }
 
+    # 예전엔 여기서 group 문서에 $push {questions: 새 id} 도 했음. 지웠음.
+    # group_id 가 data 에 이미 들어있어서 같은 사실을 두 번 적는 꼴이었고,
+    # 두 컬렉션을 잇는 write 라 중간에 끊기면 한쪽만 반영되는 문제가 있었음.
     result = db.question.insert_one(data)
-
-    db.group.update_one(
-        {"_id": group["_id"]}, {"$push": {"questions": result.inserted_id}}
-    )
 
     return jsonify({"result": "success", "question_id": str(result.inserted_id)}), 201
 
@@ -86,10 +89,17 @@ def get_questions():
             403,
         )
 
-    questions = list(db.question.find({"_id": {"$in": group["questions"]}}))
+    # 예전엔 {"_id": {"$in": group["questions"]}} 로 찾았음. 그런데 insert_group()
+    # 이 questions 키를 안 만들어서, 질문이 0개인 새 그룹에서 KeyError 500 이 났음.
+    # 이제 group 문서를 안 보고 question 쪽에서 역으로 찾음.
+    # db.py 의 (group_id, at_create DESC) 복합 인덱스를 그대로 태움.
+    # 부수 효과로 정렬이 삽입순 -> 최신순으로 바뀜.
+    questions = list(
+        db.question.find({"group_id": group["_id"]}).sort("at_create", -1)
+    )
 
-    if not questions:
-        return jsonify({"result": "success", "questions": []}), 200
+    # 빈 리스트일 때 조기 반환하던 분기도 지웠음. 아래 for 문이 그냥 통과하고
+    # 똑같은 응답이 나가서 필요 없었음.
 
     for question in questions:
         question["_id"] = str(question["_id"])
@@ -115,7 +125,11 @@ def get_question(question_id):
             403,
         )
 
-    question = db.question.find_one({}, {"_id": ObjectId(question_id), "group_id": group["_id"]})
+    # 원래 find_one({}, {"_id": ..., "group_id": ...}) 이었음. 조건이 두 번째 인자
+    # (projection) 자리에 들어가 있어서 필터가 사실상 {} 였고, 컬렉션에서 아무 문서나
+    # 1개가 리턴됐음. group_id 도 안 걸려서 다른 그룹 질문까지 열렸음.
+    # 인자 하나로 합쳐서 필터로 넘김.
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": group["_id"]})
 
     if not question:
         return jsonify({"result": "failure", "message": "코드를 찾지 못했습니다."}), 404
@@ -220,11 +234,8 @@ def delete_question(question_id):
             403,
         )
 
-    db.group.update_one(
-        {"_id": group["_id"]},
-        {"$pull": {"questions": question["_id"]}},
-    )
-
+    # 예전엔 여기서 group 문서에 $pull {questions: 이 id} 도 했음. 배열 자체를
+    # 안 두게 됐으니 뺄 것도 없어서 지웠음. (upload_question 주석 참고)
     db.question.delete_one({"_id": question["_id"]})
 
     return jsonify({"result": "success"}), 200

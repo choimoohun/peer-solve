@@ -21,7 +21,8 @@
         <h2 class="section-title">그룹 목록</h2>
         <div class="group-box-list">
             {% for group in groups %}
-            <a class="group-box" href="/groupedit?id={{ group._id }}">
+            <a class="group-box{% if selected and selected._id == group._id %} is-selected{% endif %}"
+               href="/main?group={{ group._id }}">
                 <span class="group-box-name">{{ group.name }}</span>
                 <span class="group-box-setting"></span>
             </a>
@@ -32,10 +33,13 @@
 
         <div class="main-actions">
             <a href="/groupcreate" class="btn">그룹 생성</a>
-            <a href="/questionupload" class="btn">코드올리기</a>
+            <a href="/upload" class="btn">코드올리기</a>
         </div>
 
-        <h2 class="section-title">질문 목록</h2>
+        <h2 class="section-title">
+            {% if selected %}{{ selected.name }} · 질문 목록{% else %}전체 질문 목록{% endif %}
+            {% if selected %}<a class="section-title-reset" href="/main">전체 보기</a>{% endif %}
+        </h2>
         <div class="code-list">
             {% for item in items %}
             <div class="code-item">
@@ -46,7 +50,9 @@
                 </span>
             </div>
             {% else %}
-            <p class="empty-text">아직 질문이 없습니다.</p>
+            <p class="empty-text">
+                {% if selected %}이 그룹에 올라온 코드가 없습니다.{% else %}아직 질문이 없습니다.{% endif %}
+            </p>
             {% endfor %}
         </div>
     </main>

@@ -19,7 +19,7 @@ def login():
     user = db.user.find_one({"ID": userId}, {"ID": 1, "password": 1, "_id": 0})
     if user is None or not check_password_hash(user['password'], password):
 
-        return jsonify({"result": "failure"}), 401
+        return redirect(url_for('render_login', error=1))
 
     session['user_login'] = userId
     return redirect(url_for('render_index'))
@@ -51,7 +51,6 @@ def signup():
             "ID": userId,
             "password": generate_password_hash(password),
             "nickname": nickname,
-            "join_groups": [],
             **stamp_create()
         })
     except DuplicateKeyError:
