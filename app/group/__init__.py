@@ -2,4 +2,4 @@ from flask import Blueprint
 
 group_bp = Blueprint('group', __name__, url_prefix='/group')
 
-from . import group, memder
+from . import group, member

@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo.errors import DuplicateKeyError
 from . import auth_bp
 from .nickname import random_nickname
+from ..group.group import insert_group
 from ..db import db
 from ..util import stamp_create
 
@@ -46,7 +47,7 @@ def signup():
         nickname = random_nickname()
 
     try:
-        db.user.insert_one({
+        result = db.user.insert_one({
             "ID": userId,
             "password": generate_password_hash(password),
             "nickname": nickname,
@@ -55,6 +56,9 @@ def signup():
         })
     except DuplicateKeyError:
         return jsonify({"result": "failure", "reason": "duplicate_id"}), 409
+
+    # 가입하면 본인이 owner인 개인 그룹 하나 자동 생성
+    insert_group(result.inserted_id, f"{nickname}의 그룹")
 
     return redirect(url_for('render_index'))
 
