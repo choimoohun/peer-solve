@@ -1,10 +1,175 @@
-.main-content {
-    width: 1024px;
+* {
+    box-sizing: border-box;
 }
 
+body {
+    margin: 0;
+    padding-bottom: 20px;
+    background: #ECECEC;
+    color: #000;
+    font-family: Inter, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+.btn {
+    display: inline-flex;
+    width: 124px;
+    padding: 12px;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #CACACA;
+    border-radius: 20px;
+    background: #FFF;
+    color: #000;
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.empty-text {
+    margin: 0;
+    padding: 20px;
+    color: #8A8A8A;
+    font-size: 18px;
+}
+
+/* 헤더 */
 .main-header {
-    align-self: stretch;
-    grid-row: span 1;
-    grid-column: span 1;
-    justify-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 90px;
+    padding: 20px 25px;
+    background: #FFF;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+.user-nickname {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* 본문 카드 */
+.main-content {
+    width: 1030px;
+    max-width: calc(100% - 40px);
+    margin: 17px auto 0;
+    padding: 20px;
+    border-radius: 20px;
+    background: #FFF;
+}
+
+.section-title {
+    margin: 0 0 10px 10px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* 그룹 목록 */
+.group-box-list {
+    display: flex;
+    gap: 15px;
+    padding: 10px;
+    border-radius: 24px;
+    background: #F4F4F4;
+    overflow-x: auto;
+}
+
+.group-box {
+    position: relative;
+    flex: 0 0 auto;
+    width: 230px;
+    height: 120px;
+    border-radius: 24px;
+    background: #FFF;
+    color: #000;
+    text-decoration: none;
+}
+
+.group-box-name {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 26px;
+    font-size: 20px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.group-box-setting {
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    background: #C7C7C7;
+}
+
+/* 액션 버튼 */
+.main-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-end;
+    padding: 20px 0;
+}
+
+/* 질문 목록 */
+.code-list {
+    border: 1px solid #CACACA;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.code-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    height: 120px;
+    padding: 26px 22px 21px;
+    border-bottom: 1px solid #CACACA;
+}
+
+.code-item:last-child {
+    border-bottom: none;
+}
+
+.code-name {
+    flex: 1 1 auto;
+    font-size: 20px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 작성자 / 날짜는 우측 하단에 세로로 쌓임 */
+.code-meta {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-self: flex-end;
+    font-size: 18px;
+}
+
+.code-owner {
+    font-weight: 700;
+}
+
+.code-date {
+    font-weight: 400;
 }
