@@ -29,7 +29,9 @@ def render_login():
 
 @app.route('/upload')
 def render_upload():
-    return render_template('question/upload.html')
+    return render_template('question/question_form.html',
+                           question=None,
+                           mode="create")
 
 if __name__ == '__main__':
     print(sys.executable)
