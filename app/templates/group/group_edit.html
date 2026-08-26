@@ -52,9 +52,7 @@
                         {{ member.nickname }}{% if member.is_owner %} <span class="member-badge">그룹장</span>{% endif %}
                     </span>
                     {% if is_owner and not member.is_owner %}
-                    <button type="button" class="member-kick" data-user-id="{{ member.userId }}"></button>
-                    {% else %}
-                    <span class="member-kick is-disabled"></span>
+                    <button type="button" class="btn member-kick" data-user-id="{{ member.userId }}">추방</button>
                     {% endif %}
                 </div>
                 {% else %}

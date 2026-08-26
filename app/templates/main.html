@@ -25,7 +25,9 @@
                 <a class="group-box-link" href="/main?group={{ group._id }}">
                     <span class="group-box-name">{{ group.name }}</span>
                 </a>
-                <a class="group-box-setting" href="/groupedit?group={{ group._id }}"></a>
+                <a class="group-box-setting" href="/groupedit?group={{ group._id }}">
+                    <img src="/static/settings.png" alt="그룹 관리">
+                </a>
             </div>
             {% else %}
             <p class="empty-text">아직 그룹이 없습니다.</p>
