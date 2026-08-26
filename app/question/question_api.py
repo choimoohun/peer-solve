@@ -1,7 +1,7 @@
 from bson import ObjectId
 from flask import request, jsonify, session, render_template
 
-from . import question_bp
+from . import question_api_bp
 from ..db import db
 from ..util import stamp_create, stamp_update
 
@@ -23,7 +23,7 @@ def current_group():
     return db.group.find_one({"_id": ObjectId(group_id)})
 
 
-@question_bp.route("/", methods=["POST"])
+@question_api_bp.route("/", methods=["POST"])
 def upload_question():
     user = current_user()
     if not user:
@@ -72,7 +72,7 @@ def upload_question():
     return jsonify({"result": "success", "question_id": str(result.inserted_id)}), 201
 
 
-@question_bp.route("/list", methods=["GET"])
+@question_api_bp.route("/list", methods=["GET"])
 def get_questions():
     user = current_user()
     if not user:
@@ -108,7 +108,7 @@ def get_questions():
     return jsonify({"result": "success", "questions": questions}), 200
 
 
-@question_bp.route("/<question_id>", methods=["GET"])
+@question_api_bp.route("/<question_id>", methods=["GET"])
 def get_question(question_id):
     user = current_user()
     if not user:
@@ -140,27 +140,7 @@ def get_question(question_id):
     return jsonify({"result": "success", "question": question})
 
 
-@question_bp.route("/<question_id>/edit", methods=["GET"])
-def edit_question(question_id):
-    user = current_user()
-    if not user:
-        return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
-
-    question = db.question.find_one({"_id": ObjectId(question_id)})
-    if not question:
-        return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
-
-    if question["owner"] != user["_id"]:
-        return jsonify({"result": "failure", "message": "수정 권한이 필요합니다."}), 403
-
-    return render_template(
-        "question/question_form.html",
-        question=question,
-        mode="edit"
-    )
-
-
-@question_bp.route("/<question_id>", methods=["PATCH"])
+@question_api_bp.route("/<question_id>", methods=["PUT"])
 def update_question(question_id):
     question = db.question.find_one({"_id": ObjectId(question_id)})
     if not question:
@@ -210,7 +190,7 @@ def update_question(question_id):
     return jsonify({"result": "success", "question_id": question_id}), 200
 
 
-@question_bp.route("/<question_id>", methods=["DELETE"])
+@question_api_bp.route("/<question_id>", methods=["DELETE"])
 def delete_question(question_id):
     user = current_user()
     if not user:
@@ -233,8 +213,11 @@ def delete_question(question_id):
             403,
         )
 
-    # 예전엔 여기서 group 문서에 $pull {questions: 이 id} 도 했음. 배열 자체를
-    # 안 두게 됐으니 뺄 것도 없어서 지웠음. (upload_question 주석 참고)
+    db.group.update_one(
+        {"_id": group["_id"]},
+        {"$pull": {"questions": question["_id"]}},
+    )
+
     db.question.delete_one({"_id": question["_id"]})
 
     return jsonify({"result": "success"}), 200
