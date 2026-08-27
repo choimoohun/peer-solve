@@ -9,9 +9,17 @@
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/monokai.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
 </head>
 
 <body>
+<header class="main-header">
+    <h1 class="header-title">PeerSolve</h1>
+    <div class="user-info">
+        {#<span class="user-nickname">{{ user.nickname }}</span>#}
+        <a href="/api/auth/logout" class="btn">로그아웃</a>
+    </div>
+</header>
 <form>
     <div class="mb-3">
         <input type="text" class="form-control" name="title" id="title" value="{{ question.title if question else '' }}"
