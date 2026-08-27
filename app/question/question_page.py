@@ -1,9 +1,26 @@
 from bson import ObjectId
 from flask import jsonify, render_template
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
 
 from . import question_page_bp
-from .question_api import current_user, current_group
+from .question_api import current_user
 from ..db import db
+
+
+def highlight_code(code, language):
+    try:
+        lexer = get_lexer_by_name(language)
+    except Exception:
+        lexer = get_lexer_by_name("text")
+
+    formatter = HtmlFormatter(
+        style = "monokai",
+        noclasses = True,
+        linenos = "table"
+    )
+    return highlight(code, lexer, formatter)
 
 
 @question_page_bp.route("/<question_id>", methods=["GET"])
@@ -12,29 +29,26 @@ def get_question(question_id):
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
 
-    group = current_group()
-    if not group:
-        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+    groups = db.group.find({"members": user["_id"]}, {"_id": 1})
+    if not groups:
+        return jsonify({"result": "failure", "message": "가입된 그룹이 없습니다."}), 400
 
-    if user["_id"] not in group["members"]:
-        return (
-            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
-            403,
-        )
-
-    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": group["_id"]})
+    group_ids = [group["_id"] for group in groups]
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
 
     if not question:
         return jsonify({"result": "failure", "message": "코드를 찾지 못했습니다."}), 404
 
     owner = db.user.find_one({"_id": question["owner"]})
     is_owner = question["owner"] == user["_id"]
+    code = highlight_code(question["code"], question["language"])
 
     return render_template(
         "question/question.html",
         question=question,
         owner=owner,
-        is_owner=is_owner
+        is_owner=is_owner,
+        code=code
     )
 
 

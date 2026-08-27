@@ -7,33 +7,21 @@ from ..db import db
 from ..util import stamp_create, nickname_of
 
 
-def find_question(question_id):
-    try:
-        return db.question.find_one({"_id": ObjectId(question_id)})
-    except Exception:
-        return None
-
-
 @comment_bp.route("/<question_id>", methods=["GET"])
 def get_comments(question_id):
     user = current_user()
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
 
-    group = current_group()
-    if not group:
-        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+    groups = list(db.group.find({"members": user["_id"]}, {"_id": 1}))
+    if not groups:
+        return jsonify({"result": "failure", "message": "가입된 그룹이 없습니다."}), 400
 
-    if user["_id"] not in group["members"]:
-        return (
-            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
-            403,
-        )
+    group_ids = [group["_id"] for group in groups]
 
-    question = find_question(question_id)
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
     if not question:
         return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
-
 
     comments = list(db.comment.find({"question_id": question["_id"]}).sort("at_create", -1))
 
@@ -55,17 +43,13 @@ def add_comment(question_id):
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
 
-    group = current_group()
-    if not group:
-        return jsonify({"result": "failure", "message": "선택된 그룹이 없습니다."}), 400
+    groups = list(db.group.find({"members": user["_id"]}, {"_id": 1}))
+    if not groups:
+        return jsonify({"result": "failure", "message": "가입된 그룹이 없습니다."}), 400
 
-    if user["_id"] not in group["members"]:
-        return (
-            jsonify({"result": "failure", "message": "해당 그룹의 멤버가 아닙니다."}),
-            403,
-        )
+    group_ids = [group["_id"] for group in groups]
 
-    question = find_question(question_id)
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
     if not question:
         return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
 

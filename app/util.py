@@ -85,6 +85,7 @@ def question_items(group_ids, limit=20):
     nick = nickname_of({q["owner"] for q in questions})
     return [
         {
+            "_id": str(q["_id"]),
             "title": q.get("title", "(제목 없음)"),
             "owner": nick.get(q["owner"], "알 수 없음"),
             "at_create": q["at_create"].strftime("%Y-%m-%d"),
