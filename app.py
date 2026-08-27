@@ -16,7 +16,10 @@ app.register_blueprint(page_bp)
 
 @app.route('/')
 def render_index():
-    return render_template('index.html')
+    user = current_user()
+    if user is None:
+        return redirect(url_for('render_login'))
+    return redirect(url_for('render_main'))
 
 @app.route('/main')
 def render_main():
