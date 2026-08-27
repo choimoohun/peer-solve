@@ -36,7 +36,9 @@
 
         <div class="main-actions">
             <a href="#" onclick="create_group()" class="btn">그룹 생성</a>
-            <a href="/upload" class="btn">코드올리기</a>
+            {% if session.get('selected_group') != None %}
+                <a href="/upload" class="btn">코드올리기</a>
+            {% endif %}
         </div>
 
         <h2 class="section-title">
