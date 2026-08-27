@@ -7,13 +7,6 @@ from ..db import db
 from ..util import stamp_create, nickname_of
 
 
-def find_question(question_id):
-    try:
-        return db.question.find_one({"_id": ObjectId(question_id)})
-    except Exception:
-        return None
-
-
 @comment_bp.route("/<question_id>", methods=["GET"])
 def get_comments(question_id):
     user = current_user()
