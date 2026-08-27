@@ -20,14 +20,13 @@ def get_comments(question_id):
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
 
-    groups = db.group.find({"members": user["_id"]}, {"_id": 1})
+    groups = list(db.group.find({"members": user["_id"]}, {"_id": 1}))
     if not groups:
         return jsonify({"result": "failure", "message": "가입된 그룹이 없습니다."}), 400
 
     group_ids = [group["_id"] for group in groups]
-    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
 
-    question = find_question(question_id)
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
     if not question:
         return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
 
@@ -51,14 +50,13 @@ def add_comment(question_id):
     if not user:
         return jsonify({"result": "failure", "message": "로그인이 필요합니다."}), 401
 
-    groups = db.group.find({"members": user["_id"]}, {"_id": 1})
+    groups = list(db.group.find({"members": user["_id"]}, {"_id": 1}))
     if not groups:
         return jsonify({"result": "failure", "message": "가입된 그룹이 없습니다."}), 400
 
     group_ids = [group["_id"] for group in groups]
-    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
 
-    question = find_question(question_id)
+    question = db.question.find_one({"_id": ObjectId(question_id), "group_id": {"$in": group_ids}})
     if not question:
         return jsonify({"result": "failure", "message": "존재하지 않는 코드입니다."}), 404
 
