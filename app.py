@@ -73,7 +73,16 @@ def render_login():
 
 @app.route('/upload')
 def render_upload():
-    return render_template('question/question_form.html', question=None, mode="create")
+    user = current_user()
+    if user is None:
+        return redirect(url_for('render_login'))
+
+    return render_template(
+        'question/question_form.html',
+        question=None,
+        mode="create",
+        user=user
+    )
 
 if __name__ == '__main__':
     print(sys.executable)

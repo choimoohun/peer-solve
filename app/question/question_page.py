@@ -48,7 +48,8 @@ def get_question(question_id):
         question=question,
         owner=owner,
         is_owner=is_owner,
-        code=code
+        code=code,
+        user=user
     )
 
 
@@ -68,5 +69,6 @@ def edit_question(question_id):
     return render_template(
         "question/question_form.html",
         question=question,
-        mode="edit"
+        mode="edit",
+        user=user
     )

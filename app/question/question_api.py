@@ -3,18 +3,12 @@ from flask import request, jsonify, session, render_template
 
 from . import question_api_bp
 from ..db import db
-from ..util import stamp_create, stamp_update
+from ..util import stamp_create, stamp_update, current_user
 
 
 # group.questions 배열을 걷어냄. 질문-그룹 관계는 question.group_id
 # 하나만 정본으로 씀. 이유는 각 함수 주석 참고. 되돌리려면 group 문서에 배열을
 # 다시 두고 upload/delete 양쪽에서 $push/$pull 을 살려야 함.
-
-def current_user():
-    user_id = session.get("user_login")
-    if not user_id:
-        return None
-    return db.user.find_one({"ID": user_id}, {"_id": 1})
 
 
 def current_group():

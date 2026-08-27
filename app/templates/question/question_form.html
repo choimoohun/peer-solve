@@ -9,30 +9,40 @@
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/monokai.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
 </head>
 
 <body>
-<form>
-    <div class="mb-3">
-        <input type="text" class="form-control" name="title" id="title" value="{{ question.title if question else '' }}"
-               placeholder="제목을 입력하세요"/>
+<header class="main-header">
+    <h1 class="header-title">PeerSolve</h1>
+    <div class="user-info">
+        <span class="user-nickname">{{ user.nickname }}</span>
+        <a href="/api/auth/logout" class="btn">로그아웃</a>
     </div>
-    <select id="language" name="language">
-        {#TODO: 하드코딩된 옵션 바꾸기#}
-        <option value="python" {% if question and question.language == "python" %}selected{% endif %}>Python</option>
-        <option value="c" {% if question and question.language == "c" %}selected{% endif %}>C</option>
-        <option value="javascript" {% if question and question.language == "javascript" %}selected{% endif %}>
-            JavaScript
-        </option>
-    </select>
-    <div class="mb-3">
-        <textarea class="form-control" id="code">{{ question.code if question else '' }}</textarea>
-    </div>
-</form>
+</header>
+<main class="main-content">
+    <form>
+        <div class="mb-3">
+            <input type="text" class="form-control" name="title" id="title"
+                   value="{{ question.title if question else '' }}"
+                   placeholder="제목을 입력하세요"/>
+        </div>
+        <select id="language" name="language">
+            <option value="python" {% if question and question.language == "python" %}selected{% endif %}>Python
+            </option>
+            <option value="c" {% if question and question.language == "c" %}selected{% endif %}>C</option>
+            <option value="javascript" {% if question and question.language == "javascript" %}selected{% endif %}>
+                JavaScript
+            </option>
+        </select>
+        <div class="mb-3">
+            <textarea class="form-control" id="code">{{ question.code if question else '' }}</textarea>
+        </div>
+    </form>
 
-<a id="cancel" class="btn btn-secondary" href="#" onclick="history.back()">취소</a>
-<a id="upload" class="btn btn-primary" href="#" onclick="saveQuestion()">{{ "수정" if mode == "edit" else "등록" }}</a>
-
+    <a id="cancel" class="btn btn-secondary" href="#" onclick="history.back()">취소</a>
+    <a id="upload" class="btn btn-primary" href="#" onclick="saveQuestion()">{{ "수정" if mode == "edit" else "등록" }}</a>
+</main>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
@@ -93,7 +103,7 @@
                 alert(isEdit
                     ? "코드를 성공적으로 수정했습니다!"
                     : "코드를 성공적으로 업로드했습니다!");
-                history.back();
+                window.location.replace("/main");
             },
             error: function (xhr) {
                 alert(xhr.responseJSON?.message || "요청에 실패했습니다.");
