@@ -10,7 +10,7 @@
 <body data-question-id="{{ question._id }}">
 <div class="mb-3">
     {{ question.title }}
-    {{ question.at_update }}
+    {{ question.at_update.strftime("%Y-%m-%d") }}
 </div>
 <div class="mb-3">
     <p>작성자 {{ owner.nickname }}</p>
