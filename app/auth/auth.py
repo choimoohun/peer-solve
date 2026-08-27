@@ -34,13 +34,13 @@ def signup():
     confirmPassword = request.form.get('userConfirmPassword')
 
     if not userId or not password:
-        return jsonify({"result": "failure", "reason": "empty"}), 400
+        return redirect(url_for('render_signup', error=1))
 
     if password != confirmPassword:
-        return jsonify({"result": "failure", "reason": "password_mismatch"}), 400
+        return redirect(url_for('render_signup', error=2))
 
     if db.user.find_one({"ID": userId}, {"_id": 1}):
-        return jsonify({"result": "failure", "reason": "duplicate_id"}), 409
+        return redirect(url_for('render_signup', error=3))
 
     nickname = random_nickname()
     while db.user.find_one({"nickname": nickname}, {"_id": 1}):
@@ -54,7 +54,7 @@ def signup():
             **stamp_create()
         })
     except DuplicateKeyError:
-        return jsonify({"result": "failure", "reason": "duplicate_id"}), 409
+        return redirect(url_for('render_signup', error=3))
 
     # 가입하면 본인이 owner인 개인 그룹 하나 자동 생성
     insert_group(result.inserted_id, f"{nickname}의 그룹")

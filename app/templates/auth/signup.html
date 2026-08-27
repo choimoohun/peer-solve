@@ -12,9 +12,16 @@
     <header class="main-header">
         <h1 class="header-title">PeerSolve</h1>
     </header>
-
     <main class="main-content auth-content">
         <h2 class="section-title">회원가입</h2>
+
+        {% if request.args.get('error') == '1' %}
+            <p class="auth-error">아이디나 비밀번호가 비어있습니다.</p>
+        {% elif request.args.get('error') == '2' %}
+            <p class="auth-error">비밀번호가 동일하지 않습니다.</p>
+        {% elif request.args.get('error') == '3' %}
+            <p class="auth-error">이미 존재하는 아이디입니다.</p>
+        {% endif %}
 
         <form action="/api/auth/signup" method="POST" class="auth-form">
             <div class="input-group">
