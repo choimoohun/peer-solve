@@ -50,6 +50,12 @@ body {
     font-weight: 700;
 }
 
+/* 로고 클릭하면 /main. 글자 모양은 그대로 두려고 색/밑줄만 상속 */
+.header-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
 .user-info {
     display: flex;
     align-items: center;
