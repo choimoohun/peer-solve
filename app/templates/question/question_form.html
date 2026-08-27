@@ -16,7 +16,7 @@
 <header class="main-header">
     <h1 class="header-title">PeerSolve</h1>
     <div class="user-info">
-        {#<span class="user-nickname">{{ user.nickname }}</span>#}
+        <span class="user-nickname">{{ user.nickname }}</span>
         <a href="/api/auth/logout" class="btn">로그아웃</a>
     </div>
 </header>
@@ -28,7 +28,6 @@
                    placeholder="제목을 입력하세요"/>
         </div>
         <select id="language" name="language">
-            {#TODO: 하드코딩된 옵션 바꾸기#}
             <option value="python" {% if question and question.language == "python" %}selected{% endif %}>Python
             </option>
             <option value="c" {% if question and question.language == "c" %}selected{% endif %}>C</option>
@@ -104,7 +103,7 @@
                 alert(isEdit
                     ? "코드를 성공적으로 수정했습니다!"
                     : "코드를 성공적으로 업로드했습니다!");
-                history.back();
+                window.location.replace("/main");
             },
             error: function (xhr) {
                 alert(xhr.responseJSON?.message || "요청에 실패했습니다.");
