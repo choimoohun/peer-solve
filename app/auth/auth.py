@@ -22,7 +22,7 @@ def login():
         return redirect(url_for('render_login', error=1))
 
     session['user_login'] = userId
-    return redirect(url_for('render_index'))
+    return redirect(url_for('render_main'))
 
 
 @auth_bp.route("/signup", methods=['POST'])
@@ -59,11 +59,11 @@ def signup():
     # 가입하면 본인이 owner인 개인 그룹 하나 자동 생성
     insert_group(result.inserted_id, f"{nickname}의 그룹")
 
-    return redirect(url_for('render_index'))
+    return redirect(url_for('render_main'))
 
 
 @auth_bp.route("/logout")
 def logout():
     """로그아웃"""
     session.pop('user_login', None)
-    return redirect(url_for('render_index'))
+    return redirect(url_for('render_main'))
