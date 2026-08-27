@@ -59,7 +59,7 @@ def signup():
     # 가입하면 본인이 owner인 개인 그룹 하나 자동 생성
     insert_group(result.inserted_id, f"{nickname}의 그룹")
 
-    return redirect(url_for('render_main'))
+    return redirect(url_for('render_login'))
 
 
 @auth_bp.route("/logout")
