@@ -1,9 +1,26 @@
 from bson import ObjectId
 from flask import jsonify, render_template
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
 
 from . import question_page_bp
 from .question_api import current_user
 from ..db import db
+
+
+def highlight_code(code, language):
+    try:
+        lexer = get_lexer_by_name(language)
+    except Exception:
+        lexer = get_lexer_by_name("text")
+
+    formatter = HtmlFormatter(
+        style = "monokai",
+        noclasses = True,
+        linenos = "table"
+    )
+    return highlight(code, lexer, formatter)
 
 
 @question_page_bp.route("/<question_id>", methods=["GET"])
@@ -24,12 +41,14 @@ def get_question(question_id):
 
     owner = db.user.find_one({"_id": question["owner"]})
     is_owner = question["owner"] == user["_id"]
+    code = highlight_code(question["code"], question["language"])
 
     return render_template(
         "question/question.html",
         question=question,
         owner=owner,
-        is_owner=is_owner
+        is_owner=is_owner,
+        code=code
     )
 
 
