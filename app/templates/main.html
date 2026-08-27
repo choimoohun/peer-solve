@@ -45,13 +45,13 @@
         </h2>
         <div class="code-list">
             {% for item in items %}
-            <div class="code-item">
+            <a href="/question/{{ item._id }}" class="code-item">
                 <span class="code-name">{{ item.title }}</span>
                 <span class="code-meta">
                     <span class="code-owner">{{ item.owner }}</span>
                     <span class="code-date">{{ item.at_create }}</span>
                 </span>
-            </div>
+            </a>
             {% else %}
             <p class="empty-text">
                 {% if selected %}이 그룹에 올라온 코드가 없습니다.{% else %}아직 질문이 없습니다.{% endif %}
