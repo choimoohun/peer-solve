@@ -35,7 +35,7 @@
         </div>
 
         <div class="main-actions">
-            <a href="/groupcreate" class="btn">그룹 생성</a>
+            <a href="#" onclick="create_group()" class="btn">그룹 생성</a>
             <a href="/upload" class="btn">코드올리기</a>
         </div>
 
@@ -59,6 +59,28 @@
             {% endfor %}
         </div>
     </main>
+<script>
+    function create_group() {
+        let name = prompt("그룹 이름을 입력하세요.");
+
+        $.ajax({
+            type: "POST",
+            url: "/api/group/create",
+            data: {
+                "name": name
+            },
+            success: function (response) {
+                alert("그룹이 생성되었습니다.");
+                window.location.href = response.redirect;
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                alert(response?.error || "그룹 생성에 실패했습니다.")
+            },
+        });
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </body>
 
 </html>
